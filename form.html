@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Custom log drain</title>
+</head>
+<body>
+  <form method="post">
+    <p>
+      <label>
+        Type:
+        <select name="type">
+          <option value="json">json</option>
+          <option value="ndjson">ndjson</option>
+          <option value="syslog">syslog</option>
+        </select>
+      </label>
+    </p>
+    <p>
+      <label>
+        URL:
+        <input type="text" name="url">
+      </label>
+    </p>
+    <p>
+      <button type="submit">Submit</button>
+    </p>
+  </form>
+</body>
+</html>
