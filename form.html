@@ -3,26 +3,46 @@
 <head>
   <meta charset="utf-8">
   <title>Custom log drain</title>
+  <style>
+    html {
+      font-family: sans-serif;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    select, input, button {
+      font-size: 1em;
+      padding: .5em;
+      border-radius: .25em;
+      border: 1px solid lightgray;
+    }
+
+    button {
+      background: dodgerblue;
+      border-color: dodgerblue;
+      color: white;
+    }
+
+    button:hover {
+      background: none;
+      color: dodgerblue;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
+  <h1>Custom log drain baby!</h1>
   <form method="post">
     <p>
-      <label>
-        Type:
-        <select name="type">
-          <option value="json">json</option>
-          <option value="ndjson">ndjson</option>
-          <option value="syslog">syslog</option>
-        </select>
-      </label>
-    </p>
-    <p>
-      <label>
-        URL:
-        <input type="text" name="url">
-      </label>
-    </p>
-    <p>
+      <select name="type">
+        <option value="json">json</option>
+        <option value="ndjson">ndjson</option>
+        <option value="syslog">syslog</option>
+      </select>
+      <input type="text" name="url" placeholder="URL">
       <button type="submit">Submit</button>
     </p>
   </form>
