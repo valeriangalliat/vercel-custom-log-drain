@@ -55,10 +55,10 @@ app.register(formBody)
 
 app.get('/vercel/callback', (req, res) => {
   if (!req.query.code || !req.query.next) {
-    res.type('text/plain').send('Hello!')
+    return res.type('text/plain').send('Hello!')
   }
 
-  return res.type('text/html').send(form)
+  res.type('text/html').send(form)
 })
 
 app.post('/vercel/callback', async (req, res) => {
@@ -77,7 +77,7 @@ app.post('/vercel/callback', async (req, res) => {
   res.redirect(req.query.next)
 })
 
-app.listen(8080, err => {
+app.listen(process.env.PORT || 8080, err => {
   if (err) {
     app.log.error(err)
     process.exit(1)

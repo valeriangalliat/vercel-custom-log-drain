@@ -49,6 +49,73 @@ Vercel supports 3 formats: JSON, NDJSON and syslog. See the [API
 documentation](https://vercel.com/docs/api#integrations/log-drains/format-and-transport)
 for more details.
 
+## Hosting this integration
+
+This will guide you to host your own instance of this integration.
+
+I recommend you do to this, as if you rely on my personal instance, if
+it was to go down you won't be able to configure custom log drains
+again. While log drains will still work once they're installed, it could
+be an issue if you want to update your log drain URL, remove the
+integration, but can't add it again because the service is down.
+
+### Create a new Vercel integration
+
+First, you need to create a new Vercel integration in the [integrations console](https://vercel.com/dashboard/integrations/console).
+
+Fill all the fields as you please.
+
+For the logo, I used Apple's [wood emoji](https://emojipedia.org/apple/ios-14.6/wood/) and
+the [`integration.png`](integration.png) image as (mandatory) feature
+media.
+
+For the redirect URL, note that the code in this repo will respond to
+the `/vercel/callback` path.
+
+You can ignore the webhook and configuration URLs.
+
+### Run the server
+
+Clone this repo and setup the project.
+
+```sh
+git clone https://github.com/valeriangalliat/vercel-custom-log-drain.git
+cd vercel-custom-log-drain
+npm install
+cp config.sample.json config.json
+```
+
+Edit `config.json` to add the client ID and secret that Vercel gave you
+when you created the integration, as well as the full redirect URL that
+you defined.
+
+By default the server listens on port `8080` but you can tweak that with the
+`PORT` environment variable.
+
+```sh
+PORT=1337 npm start
+```
+
+### systemd service
+
+Tweak [`vercel-custom-log-drain.service`](vercel-custom-log-drain.service) as
+you please to use it with systemd.
+
+For example to use it as a user service on a user with
+[lingering](https://wiki.archlinux.org/title/systemd/User#Automatic_start-up_of_systemd_user_instances):
+
+```sh
+mkdir -p ~/.config/systemd/user
+cp vercel-custom-log-drain.service ~/.config/systemd/user
+
+# Adapt the service file.
+vim ~/.config/systemd/user/vercel-custom-log-drain.service
+
+systemctl --user daemon-reload
+systemctl --user enable vercel-custom-log-drain
+systemctl --user start vercel-custom-log-drain
+```
+
 ## Making a simple log drain with nginx
 
 If you already have a server running nginx somewhere, you can use it as

@@ -1,0 +1,9 @@
+[Unit]
+Description=Vercel custom log drain
+
+[Service]
+WorkingDirectory=/path/to/vercel-custom-log-drain
+ExecStart=/path/to/node index.js
+
+[Install]
+WantedBy=default.target
