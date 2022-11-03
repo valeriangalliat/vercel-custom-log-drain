@@ -74,7 +74,7 @@ the `/vercel/callback` path.
 
 You can ignore the webhook and configuration URLs.
 
-### Run the server
+### Local development
 
 Clone this repo and setup the project.
 
@@ -95,6 +95,9 @@ By default the server listens on port `8080` but you can tweak that with the
 ```sh
 PORT=1337 npm start
 ```
+
+To test locally, configure `http://localhost:8080/vercel/callback` as a redirect
+URL in your Vercel integration as well as in `config.json`.
 
 ### systemd service
 
