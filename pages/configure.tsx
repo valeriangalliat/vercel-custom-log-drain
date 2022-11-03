@@ -31,7 +31,7 @@ export async function getServerSideProps(context: NextPageContext) {
 
   const logDrains = await getLogDrains(token)
 
-  const baseUrl = new URL(process.env.VERCEL_REDIRECT_URI!)
+  const baseUrl = new URL(process.env.VRCL_REDIRECT_URI!)
   baseUrl.pathname = '/configure'
   baseUrl.searchParams.set('token', encryptedToken)
   baseUrl.searchParams.set('iv', iv)

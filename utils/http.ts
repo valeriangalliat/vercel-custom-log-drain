@@ -3,7 +3,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { CookieSerializeOptions } from 'next/dist/server/web/types'
 import { NextResponse } from 'next/server'
 
-export const isHttps = process.env.VERCEL_REDIRECT_URI!.startsWith('https://')
+export const isHttps = process.env.VRCL_REDIRECT_URI!.startsWith('https://')
 
 export function getParam(
   param: string | string[] | undefined

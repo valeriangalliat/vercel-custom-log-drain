@@ -35,10 +35,10 @@ export async function getToken(code: string): Promise<string> {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: new URLSearchParams({
-      client_id: process.env.VERCEL_CLIENT_ID!,
-      client_secret: process.env.VERCEL_CLIENT_SECRET!,
+      client_id: process.env.VRCL_CLIENT_ID!,
+      client_secret: process.env.VRCL_CLIENT_SECRET!,
       code,
-      redirect_uri: process.env.VERCEL_REDIRECT_URI!,
+      redirect_uri: process.env.VRCL_REDIRECT_URI!,
     }),
   })
 
