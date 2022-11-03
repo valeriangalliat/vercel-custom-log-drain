@@ -23,6 +23,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       maxAge: -1,
       secure: isHttps,
     },
+    {
+      name: 'team',
+      value: '',
+      httpOnly: true,
+      path: '/',
+      maxAge: -1,
+      secure: isHttps,
+    },
   ])
 
   return res.redirect('/login')

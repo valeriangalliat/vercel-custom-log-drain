@@ -22,7 +22,7 @@ export default async function handler(
     Buffer.from(cookie.token, 'base64url')
   ).toString()
 
-  await deleteLogDrain(token, req.body.id)
+  await deleteLogDrain(token, req.body.id, cookie.team)
 
   return res.redirect('/configure')
 }

@@ -1,7 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { encrypt } from '../../utils/crypto'
 import { isHttps, setCookie } from '../../utils/http'
-import crypto from 'node:crypto'
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -12,13 +10,22 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).end()
   }
 
-  const iv = crypto.randomBytes(16)
-  const token = encrypt(iv, Buffer.from(req.body.password))
+  const url = new URL(req.body.password)
 
-  setCookie(res, [
+  console.log('URL', url)
+
+  const token = url.searchParams.get('token')
+  const iv = url.searchParams.get('iv')
+  const team = url.searchParams.get('team')
+
+  if (!token || !iv) {
+    return res.status(403).end()
+  }
+
+  const cookies = [
     {
       name: 'token',
-      value: token.toString('base64url'),
+      value: token,
       httpOnly: true,
       path: '/',
       maxAge: 60 * 60 * 24 * 365 * 10,
@@ -26,13 +33,26 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     },
     {
       name: 'iv',
-      value: iv.toString('base64url'),
+      value: iv,
       httpOnly: true,
       path: '/',
       maxAge: 60 * 60 * 24 * 365 * 10,
       secure: isHttps,
     },
-  ])
+  ]
+
+  if (team) {
+    cookies.push({
+      name: 'team',
+      value: team,
+      httpOnly: true,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365 * 10,
+      secure: isHttps,
+    })
+  }
+
+  setCookie(res, cookies)
 
   return res.redirect('/configure')
 }

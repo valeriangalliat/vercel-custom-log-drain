@@ -7,6 +7,7 @@ import { decrypt } from '../utils/crypto'
 export async function getServerSideProps(context: NextPageContext) {
   let encryptedToken = getParam(context.query.token)
   let iv = getParam(context.query.iv)
+  let team = getParam(context.query.team)
 
   if (!encryptedToken || !iv) {
     const cookie = getCookie(context.req)
@@ -22,6 +23,7 @@ export async function getServerSideProps(context: NextPageContext) {
 
     encryptedToken = cookie.token
     iv = cookie.iv
+    team = cookie.team
   }
 
   const token = decrypt(
@@ -29,12 +31,16 @@ export async function getServerSideProps(context: NextPageContext) {
     Buffer.from(encryptedToken, 'base64url')
   ).toString()
 
-  const logDrains = await getLogDrains(token)
+  const logDrains = await getLogDrains(token, team)
 
   const baseUrl = new URL(process.env.VRCL_REDIRECT_URI!)
   baseUrl.pathname = '/configure'
   baseUrl.searchParams.set('token', encryptedToken)
   baseUrl.searchParams.set('iv', iv)
+
+  if (team) {
+    baseUrl.searchParams.set('team', team)
+  }
 
   const secretUrl = baseUrl.toString()
 
@@ -42,7 +48,6 @@ export async function getServerSideProps(context: NextPageContext) {
     props: {
       logDrains,
       secretUrl,
-      token,
     },
   }
 }
@@ -209,7 +214,7 @@ export default function Home(
               className="visually-hidden"
               name="password"
               id="password"
-              value={props.token}
+              value={props.secretUrl}
             />
             <button
               className="btn btn-sm btn-primary"

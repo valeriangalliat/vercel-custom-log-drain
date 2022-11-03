@@ -71,8 +71,12 @@ export type LogDrain = {
   sources?: ('static' | 'lambda' | 'build' | 'edge' | 'external')[]
 }
 
-export async function getLogDrains(token: string): Promise<LogDrain[]> {
-  const url = `${base}/v1/integrations/log-drains`
+function getQuery(teamId?: string) {
+  return teamId ? `?teamId=${encodeURIComponent(teamId)}` : ''
+}
+
+export async function getLogDrains(token: string, teamId?: string): Promise<LogDrain[]> {
+  const url = `${base}/v1/integrations/log-drains${getQuery(teamId)}`
 
   const res = await fetchOk(url, {
     headers: {
@@ -85,9 +89,10 @@ export async function getLogDrains(token: string): Promise<LogDrain[]> {
 
 export async function createLogDrain(
   token: string,
-  logDrain: LogDrain
+  logDrain: LogDrain,
+  teamId?: string
 ): Promise<LogDrain> {
-  const url = `${base}/v1/integrations/log-drains`
+  const url = `${base}/v1/integrations/log-drains${getQuery(teamId)}`
 
   const res = await fetchOk(url, {
     method: 'post',
@@ -100,8 +105,8 @@ export async function createLogDrain(
   return await res.json()
 }
 
-export async function deleteLogDrain(token: string, id: string): Promise<void> {
-  const url = `${base}/v1/integrations/log-drains/${encodeURIComponent(id)}`
+export async function deleteLogDrain(token: string, id: string, teamId?: string): Promise<void> {
+  const url = `${base}/v1/integrations/log-drains/${encodeURIComponent(id)}${getQuery(teamId)}`
 
   await fetchOk(url, {
     method: 'delete',

@@ -9,7 +9,9 @@ import getRawBody from 'raw-body'
 export async function getServerSideProps(context: NextPageContext) {
   const method = context.req?.method
   const next = getParam(context.query.next)
-  let token: string
+  const team = getParam(context.query.teamId)
+  let iv: Buffer
+  let encryptedToken: Buffer
 
   if (method === 'POST') {
     const body = new URLSearchParams(
@@ -20,7 +22,16 @@ export async function getServerSideProps(context: NextPageContext) {
       throw new Error('Invalid body')
     }
 
-    token = body.get('password')!
+    const url = new URL(body.get('password')!)
+    const ivParam = url.searchParams.get('iv')
+    const tokenParam = url.searchParams.get('token')
+
+    if (!ivParam || !tokenParam) {
+      throw new Error('Invalid body')
+    }
+
+    iv = Buffer.from(ivParam, 'base64url')
+    encryptedToken = Buffer.from(tokenParam, 'base64url')
   } else {
     const code = getParam(context.query.code)
 
@@ -28,13 +39,14 @@ export async function getServerSideProps(context: NextPageContext) {
       throw new Error('Missing `code` or `next` param')
     }
 
-    token = await vercel.getToken(code)
+    const token = await vercel.getToken(code)
+
+    iv = crypto.randomBytes(16)
+    encryptedToken = encrypt(iv, Buffer.from(token))
   }
 
-  const iv = crypto.randomBytes(16)
-  const encryptedToken = encrypt(iv, Buffer.from(token))
 
-  setCookie(context.res!, [
+  const cookies = [
     {
       name: 'token',
       value: encryptedToken.toString('base64url'),
@@ -51,18 +63,34 @@ export async function getServerSideProps(context: NextPageContext) {
       maxAge: 60 * 60 * 24 * 365 * 10,
       secure: isHttps,
     },
-  ])
+  ]
+
+  if (team) {
+    cookies.push({
+      name: 'team',
+      value: team,
+      httpOnly: true,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365 * 10,
+      secure: isHttps,
+    })
+  }
+
+  setCookie(context.res!, cookies)
 
   const baseUrl = new URL(process.env.VRCL_REDIRECT_URI!)
   baseUrl.pathname = '/configure'
   baseUrl.searchParams.set('token', encryptedToken.toString('base64url'))
   baseUrl.searchParams.set('iv', iv.toString('base64url'))
 
+  if (team) {
+    baseUrl.searchParams.set('team', team)
+  }
+
   const secretUrl = baseUrl.toString()
 
   return {
     props: {
-      token,
       method,
       next,
       secretUrl,
@@ -107,7 +135,7 @@ export default function Home(
             className="visually-hidden"
             name="password"
             id="password"
-            value={props.token}
+            value={props.secretUrl}
           />
           <button
             className="btn btn-sm btn-primary"
