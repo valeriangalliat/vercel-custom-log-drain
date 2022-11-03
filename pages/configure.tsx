@@ -158,7 +158,6 @@ export default function Home(
                   defaultValue={[
                     'static',
                     'lambda',
-                    'build',
                     'edge',
                     'external',
                   ]}
