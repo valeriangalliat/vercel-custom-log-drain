@@ -8,115 +8,102 @@
 
 </div>
 
+[**Install on Vercel!**](https://vercel.com/integrations/custom-log-drain)
+
 ## Overview
 
-This is the source of a [Vercel integration](https://vercel.com/docs/integrations)
-that leverages the [log drains](https://vercel.com/docs/api#integrations/log-drains)
-feature of the API to allow you to configure arbitrary log drains on your apps.
+**Vercel custom log drain** is a [Vercel integration](https://vercel.com/integrations/custom-log-drain)
+that allows you to send your Vercel logs to the destinations of your
+choice.
 
 By default Vercel only allows you to configure [external logging services](https://vercel.com/integrations?category=logging)
-like Datadog, LogDNA and more, but there's no option to manually
-configure another service, which is why I wrote this.
+like Datadog, LogDNA and more through the Vercel marketplace, but
+there's no option to use your own.
 
-Read more on the Vercel blog about [their implementation of log drains](https://vercel.com/blog/log-drains).
+Thanks to this generic integration, you can simply configure the log
+format and URL where you want to send your logs!
 
-## Marketplace integration
+**Note:** if you're looking for a simple way to store logs in text files
+on a server you control, see [making a simple log drain with nginx](#making-a-simple-log-drain-with-nginx).
 
-For convenience and mostly for my personal usage, I provide a hosted
-version of this integration on my own server, which you can find on the
-[Vercel marketplace](https://vercel.com/integrations/custom-log-drain).
+## Log drain formats
 
-This service is provided for free and I offer no guarantee on its
-availability. If [this page](https://cloud.codejam.info/vercel/callback)
-responds, then it means it's up and you can use it.
-
-The only purpose of this integration is to configure a custom log drain
-for you (something that Vercel doesn't currently allow you to do). Once
-installed, the actual forwarding of logs doesn't depend on this
-integration at all.
-
-As you can verify in the [source code](index.js), the app do not store
-the access token (or anything whatsoever), meaning that it cannot make
-API requests once the installation is completed and the log drain is
-configured.
-
-This means that in order to update a log drain URL, you need to remove
-the integration and install it again.
-
-## Log drain format
-
-Vercel supports 3 formats: JSON, NDJSON and syslog. See the [API
-documentation](https://vercel.com/docs/api#integrations/log-drains/format-and-transport)
+Vercel supports 3 formats: JSON, NDJSON and syslog. See the
+[API documentation](https://vercel.com/docs/rest-api#introduction/api-basics/format-and-transport)
 for more details.
 
-## Hosting this integration
+## Technical details & design
 
-This will guide you to host your own instance of this integration.
+This integration is hosted on Vercel, on <https://custom-drain.vercel.app/>.
 
-I recommend you do to this, as if you rely on my personal instance, if
-it was to go down you won't be able to configure custom log drains
-again. While log drains will still work once they're installed, it could
-be an issue if you want to update your log drain URL, remove the
-integration, but can't add it again because the service is down.
+It uses the [log drains](https://vercel.com/docs/api#integrations/log-drains)
+API to allow you to configure arbitrary log drains on your apps.
+
+**It is designed to be entirely stateless.** There's no database and
+nothing is stored server-side (because I provide this service for free
+and I'd like to keep hosting it for free too 😏).
+
+Because of that, the token that Vercel provides when you install the
+integration to call the API is only stored (encrypted) in your browser
+cookies. You're also given an opportunity to store the (encrypted) token
+in your password manager, or in your bookmarks using a special link, so
+that you have the ability to view, add or delete your log drains later
+on, as well as share it with your team.
+
+Useful read: [Vercel integrations](https://vercel.com/docs/integrations).
+
+## Development
 
 ### Create a new Vercel integration
 
-First, you need to create a new Vercel integration in the [integrations console](https://vercel.com/dashboard/integrations/console).
+For local development, you need to create a new Vercel integration to
+test with. You can do that from the [integrations
+console](https://vercel.com/dashboard/integrations/console).
 
-Fill all the fields as you please.
-
-For the logo, I used Apple's [wood emoji](https://emojipedia.org/apple/ios-14.6/wood/) and
-the [`integration.png`](integration.png) image as (mandatory) feature
+For the logo, I used Apple's [wood emoji](https://emojipedia.org/apple/ios-14.6/wood/)
+and the [`integration.png`](integration.png) image as (mandatory) feature
 media.
 
-For the redirect URL, note that the code in this repo will respond to
-the `/vercel/callback` path.
+**Redirect URL:** `http://localhost:3030/install`  
+**Configuration URL:** `http://localhost:3030/configure`
 
-You can ignore the webhook and configuration URLs.
-
-### Local development
-
-Clone this repo and setup the project.
+### Clone and configure
 
 ```sh
 git clone https://github.com/valeriangalliat/vercel-custom-log-drain.git
 cd vercel-custom-log-drain
 npm install
-cp config.sample.json config.json
 ```
 
-Edit `config.json` to add the client ID and secret that Vercel gave you
-when you created the integration, as well as the full redirect URL that
-you defined.
+Create a `.env` file and add the following contents:
 
-By default the server listens on port `8080` but you can tweak that with the
-`PORT` environment variable.
-
-```sh
-PORT=1337 npm start
+```env
+VRCL_CLIENT_ID=
+VRCL_CLIENT_SECRET=
+VRCL_REDIRECT_URI=http://localhost:3030/install
+AES_KEY=
 ```
 
-To test locally, configure `http://localhost:8080/vercel/callback` as a redirect
-URL in your Vercel integration as well as in `config.json`.
+For `VRCL_CLIENT_ID` and `VRCL_CLIENT_SECRET`, put the client ID and
+secret that Vercel gave you when you created the integration.
 
-### systemd service
+**Note:** the environment variables use `VRCL_` and not `VERCEL_` prefix
+because the `VERCEL_` prefix cannot be used for arbitrary variables when
+hosting on Vercel.
 
-Tweak [`vercel-custom-log-drain.service`](vercel-custom-log-drain.service) as
-you please to use it with systemd.
-
-For example to use it as a user service on a user with
-[lingering](https://wiki.archlinux.org/title/systemd/User#Automatic_start-up_of_systemd_user_instances):
+The `AES_KEY` is used to encrypt the Vercel tokens to be stored in the
+user's browser. You can generate a key using the following command:
 
 ```sh
-mkdir -p ~/.config/systemd/user
-cp vercel-custom-log-drain.service ~/.config/systemd/user
+node -p "crypto.randomBytes(32).toString('base64url')"
+```
 
-# Adapt the service file.
-vim ~/.config/systemd/user/vercel-custom-log-drain.service
+### Start
 
-systemctl --user daemon-reload
-systemctl --user enable vercel-custom-log-drain
-systemctl --user start vercel-custom-log-drain
+Finally, start the development server:
+
+```sh
+npm start
 ```
 
 ## Making a simple log drain with nginx
