@@ -202,6 +202,7 @@ export default function Home(
               className="form-control form-control-sm w-auto"
               name="username"
               id="username"
+              value="Vercel Custom Log Drain"
               style={{
                 marginRight: -1,
                 borderTopRightRadius: 0,
