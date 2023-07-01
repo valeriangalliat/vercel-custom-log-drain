@@ -85,7 +85,7 @@ export default function Home(
               <tbody>
                 {props.logDrains.map(drain => (
                   <tr key={drain.id}>
-                    <td>{drain.type}</td>
+                    <td>{drain.deliveryFormat}</td>
                     <td>{drain.name}</td>
                     <td>{drain.url}</td>
                     <td>{drain.sources?.join(', ')}</td>
@@ -105,7 +105,7 @@ export default function Home(
           <tfoot>
             <tr>
               <th>
-                <label htmlFor="type">Type</label>
+                <label htmlFor="deliveryFormat">Type</label>
               </th>
               <th>
                 <label htmlFor="name">Name</label>
@@ -123,11 +123,13 @@ export default function Home(
                 <select
                   form="add"
                   className="form-select"
-                  name="type"
-                  id="type"
+                  name="deliveryFormat"
+                  id="deliveryFormat"
+                  defaultValue="ndjson"
+                  required
                 >
-                  <option value="json">json</option>
                   <option value="ndjson">ndjson</option>
+                  <option value="json">json</option>
                   <option value="syslog">syslog</option>
                 </select>
               </td>
@@ -138,6 +140,8 @@ export default function Home(
                   className="form-control"
                   name="name"
                   id="name"
+                  defaultValue="Log Drain"
+                  required
                 />
               </td>
               <td>
@@ -147,26 +151,25 @@ export default function Home(
                   className="form-control"
                   name="url"
                   id="url"
+                  required
                 />
               </td>
               <td>
                 <select
                   form="add"
                   className="form-select"
+                  name="sources"
                   id="sources"
                   multiple
-                  defaultValue={[
-                    'static',
-                    'lambda',
-                    'edge',
-                    'external',
-                  ]}
+                  defaultValue={['static', 'lambda', 'edge', 'external']}
+                  required
                 >
                   <option value="static">static</option>
                   <option value="lambda">lambda</option>
                   <option value="build">build</option>
                   <option value="edge">edge</option>
                   <option value="external">external</option>
+                  <option value="deployment">deployment</option>
                 </select>
               </td>
               <td>
@@ -202,7 +205,7 @@ export default function Home(
               className="form-control form-control-sm w-auto"
               name="username"
               id="username"
-              value="Vercel Custom Log Drain"
+              defaultValue="Vercel Custom Log Drain"
               style={{
                 marginRight: -1,
                 borderTopRightRadius: 0,
@@ -215,6 +218,7 @@ export default function Home(
               name="password"
               id="password"
               value={props.secretUrl}
+              readOnly
             />
             <button
               className="btn btn-sm btn-primary"

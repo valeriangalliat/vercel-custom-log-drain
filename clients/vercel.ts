@@ -58,7 +58,7 @@ export type LogDrain = {
   /** The unique identifier of the log drain. Always prefixed with `ld_` */
   id: string
   /** The type of log format */
-  type: 'json' | 'ndjson' | 'syslog'
+  deliveryFormat: 'json' | 'ndjson' | 'syslog'
   /** The name of the log drain */
   name: string
   /** The identifier of the team or user whose events will trigger the log drain */
@@ -68,15 +68,25 @@ export type LogDrain = {
   /** The URL to call when logs are generated */
   url: string
   /** The sources from which logs are currently being delivered to this log drain */
-  sources?: ('static' | 'lambda' | 'build' | 'edge' | 'external')[]
+  sources?: (
+    | 'static'
+    | 'lambda'
+    | 'build'
+    | 'edge'
+    | 'external'
+    | 'deployment'
+  )[]
 }
 
 function getQuery(teamId?: string) {
   return teamId ? `?teamId=${encodeURIComponent(teamId)}` : ''
 }
 
-export async function getLogDrains(token: string, teamId?: string): Promise<LogDrain[]> {
-  const url = `${base}/v1/integrations/log-drains${getQuery(teamId)}`
+export async function getLogDrains(
+  token: string,
+  teamId?: string
+): Promise<LogDrain[]> {
+  const url = `${base}/v2/integrations/log-drains${getQuery(teamId)}`
 
   const res = await fetchOk(url, {
     headers: {
@@ -92,7 +102,7 @@ export async function createLogDrain(
   logDrain: LogDrain,
   teamId?: string
 ): Promise<LogDrain> {
-  const url = `${base}/v1/integrations/log-drains${getQuery(teamId)}`
+  const url = `${base}/v2/integrations/log-drains${getQuery(teamId)}`
 
   const res = await fetchOk(url, {
     method: 'post',
@@ -105,8 +115,14 @@ export async function createLogDrain(
   return await res.json()
 }
 
-export async function deleteLogDrain(token: string, id: string, teamId?: string): Promise<void> {
-  const url = `${base}/v1/integrations/log-drains/${encodeURIComponent(id)}${getQuery(teamId)}`
+export async function deleteLogDrain(
+  token: string,
+  id: string,
+  teamId?: string
+): Promise<void> {
+  const url = `${base}/v1/integrations/log-drains/${encodeURIComponent(
+    id
+  )}${getQuery(teamId)}`
 
   await fetchOk(url, {
     method: 'delete',
